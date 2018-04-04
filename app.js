@@ -1,13 +1,12 @@
-// TODO: make so it monitors public ip for a change, then update ip
-
 'use strict';
 require('dotenv').config();
 const extIP = require('external-ip');
 const request = require("request");
 const moment = require('moment');
+const timeFormat = "YYYY-DD-MM hh:mm";
 const userAgent = 'GDDNS Updater';
-const updateInterval = 10000;
-// const updateInterval = 900000; // 15 minutes
+const updateInterval = 900000; // 15 minutes
+
 let currentIP = '0.0.0.0';
 
 
@@ -19,7 +18,12 @@ let getIP = extIP({
   userAgent: userAgent
 });
 
+startCheck();
 setInterval(() => {
+  startCheck();
+}, updateInterval);
+
+function startCheck() {
   getIP((err, ip) => {
     if (err) {
       throw err;
@@ -27,15 +31,13 @@ setInterval(() => {
 
     if (ip !== currentIP) {
       currentIP = ip;
-      console.log( moment().format("YYYY-DD-MM hh:mm") + ' | Updating ip to: ' + ip);
+      console.log( moment().format(timeFormat) + ' | Updating IP to: ' + ip);
       updateIP(ip);
     } else {
-      console.log( moment().format("YYYY-DD-MM hh:mm") + ' | No update required.');
+      console.log( moment().format(timeFormat) + ' | No update required.');
     }
-
-  })
-}, updateInterval);
-
+  });
+}
 
 function updateIP(ip) {
   let options = {
