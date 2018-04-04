@@ -1,3 +1,5 @@
+// TODO: make so it monitors public ip for a change, then update ip
+
 'use strict';
 require('dotenv').config();
 const extIP = require('external-ip');
@@ -16,7 +18,6 @@ getIP((err, ip) => {
   if (err) {
     throw err;
   }
-  console.log(ip);
   updateIP(ip);
 });
 
