@@ -4,7 +4,12 @@
 require('dotenv').config();
 const extIP = require('external-ip');
 const request = require("request");
+const moment = require('moment');
 const userAgent = 'GDDNS Updater';
+const updateInterval = 10000;
+// const updateInterval = 900000; // 15 minutes
+let currentIP = '0.0.0.0';
+
 
 let getIP = extIP({
   replace: true,
@@ -14,12 +19,23 @@ let getIP = extIP({
   userAgent: userAgent
 });
 
-getIP((err, ip) => {
-  if (err) {
-    throw err;
-  }
-  updateIP(ip);
-});
+setInterval(() => {
+  getIP((err, ip) => {
+    if (err) {
+      throw err;
+    }
+
+    if (ip !== currentIP) {
+      currentIP = ip;
+      console.log( moment().format("YYYY-DD-MM hh:mm") + ' | Updating ip to: ' + ip);
+      updateIP(ip);
+    } else {
+      console.log( moment().format("YYYY-DD-MM hh:mm") + ' | No update required.');
+    }
+
+  })
+}, updateInterval);
+
 
 function updateIP(ip) {
   let options = {
@@ -35,7 +51,6 @@ function updateIP(ip) {
   };
   request(options, function (error, response, body) {
     if (error) throw new Error(error);
-
     console.log(body);
   });
 }
