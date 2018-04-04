@@ -5,7 +5,7 @@ const request = require("request");
 const moment = require('moment');
 const timeFormat = "YYYY-DD-MM hh:mm";
 const userAgent = 'GDDNS Updater';
-const updateInterval = 900000; // 15 minutes
+const updateInterval = process.env.GDDNS_INT; // 900000 = 15 minutes
 
 let currentIP = '0.0.0.0';
 
