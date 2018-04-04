@@ -1,7 +1,7 @@
 # gddns-updater
 Google Domains Dynamic DNS Updater.
 
-Checks your public IP address every 15 minutes
+Checks your public IP address at a specified interval. Recommended interval is `900000`, or 15 minutes.
 
 ## Install instructions
 - `npm i`
