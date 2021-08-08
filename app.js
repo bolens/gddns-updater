@@ -1,22 +1,31 @@
 'use strict';
 require('dotenv').config();
-const extIP = require('external-ip');
-const request = require("request");
+const publicIp = require('public-ip');
+const fetch = require('node-fetch');
 const moment = require('moment');
+
+const logSymbols = require('log-symbols');
 const timeFormat = "YYYY-DD-MM hh:mm";
 const userAgent = 'GDDNS Updater';
 const updateInterval = process.env.GDDNS_INT; // 900000 = 15 minutes
 
-let currentIP = '0.0.0.0';
+let currentIP = {
+  v4: null,
+  v6: null
+};
 
 
-let getIP = extIP({
-  replace: true,
-  services: ['http://ifconfig.co/x-real-ip', 'http://ifconfig.io/ip'],
-  timeout: 600,
-  getIP: 'parallel',
-  userAgent: userAgent
-});
+let getIP = async () => {
+  let ip = {
+    v4: null,
+    v6: null
+  };
+
+  ip.v4 = await publicIp.v4();
+  ip.v6 = await publicIp.v6();
+
+  return ip;
+};
 
 startCheck();
 setInterval(() => {
@@ -24,35 +33,36 @@ setInterval(() => {
 }, updateInterval);
 
 function startCheck() {
-  getIP((err, ip) => {
-    if (err) {
-      throw err;
-    }
+  let ip = getIP();
 
-    if (ip !== currentIP) {
-      currentIP = ip;
-      console.log( moment().format(timeFormat) + ' | Updating IP to: ' + ip);
-      updateIP(ip);
-    } else {
-      console.log( moment().format(timeFormat) + ' | No update required.');
-    }
-  });
+  if (ip !== currentIP) {
+    currentIP = ip;
+    console.info(`${logSymbols.info} ${(moment().format(timeFormat))} | Updating IP to: ${ip.v4}`);
+    updateIP(ip.v4);
+  } else {
+    console.info( `${logSymbols.info} ${moment().format(timeFormat)} | No update required.`);
+  }
 }
 
-function updateIP(ip) {
+function updateIP(newIp) {
+  const url = `https://${process.env.GDDNS_USER}:${process.env.GDDNS_PASS}@domains.google.com/nic/update`;
   let options = {
     method: 'POST',
-    url: 'https://' + process.env.GDDNS_USER + ':' + process.env.GDDNS_PASS + '@domains.google.com/nic/update',
     qs: {
       hostname: process.env.GDDNS_HOST,
-      myip: ip
+      myip: newIp
     },
     headers: {
       'User-Agent': userAgent
     }
   };
-  request(options, function (error, response, body) {
-    if (error) throw new Error(error);
-    console.log(body);
-  });
+  fetch(url, options)
+    .then(res => console.log(res))
+    .then(body => {
+      console.log(body);
+      console.log(`${logSymbols.success} Updated successfully`)
+    })
+    .catch(err => {
+      console.error(err)
+    });
 }
