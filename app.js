@@ -14,7 +14,6 @@ let currentIP = {
   v6: null
 };
 
-
 let getIP = async () => {
   let ip = {
     v4: null,
