@@ -12,7 +12,7 @@
   "dependencies": {
     "dotenv": "^10.0.0",
     "log-symbols": "^5.0.0",
-    "moment": "^2.29.2",
+    "moment": "^2.29.4",
     "node-fetch": "^3.2.10",
     "public-ip": "^6.0.1"
   }
